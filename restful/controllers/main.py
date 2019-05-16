@@ -4,7 +4,7 @@ import functools
 import logging
 from odoo import http
 from odoo.http import request
-from odoo.addons.restful.common import (
+from ..common import (
     valid_response,
     invalid_response,
     extract_arguments,
