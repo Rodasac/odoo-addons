@@ -1,6 +1,7 @@
 """Common methods"""
 import ast
 import logging
+import datetime
 import werkzeug.wrappers
 from odoo.http import request
 
@@ -14,6 +15,13 @@ else:
     import json
 
 
+def default(o):
+    if isinstance(o, (datetime.date, datetime.datetime)):
+        return o.isoformat()
+    if isinstance(o, bytes):
+        return o.decode('utf-8')
+
+
 def valid_response(data, status=200):
     """Valid Response
     This will be return when the http request was successfully processed."""
@@ -21,7 +29,7 @@ def valid_response(data, status=200):
     return werkzeug.wrappers.Response(
         status=status,
         content_type="application/json; charset=utf-8",
-        response=json.dumps(data),
+        response=json.dumps(data, default=default),
     )
 
 
@@ -47,10 +55,10 @@ def invalid_response(typ, message=None, status=401):
 def extract_arguments(payloads, offset=0, limit=0, order=None):
     """."""
     fields, domain, payload = [], [], {}
-    data = str(payloads)[2:-2]
+    data = str(payloads)
     try:
         payload = json.loads(data)
-    except JSONDecodeError as e:
+    except (JSONDecodeError, json.decoder.JSONDecodeError) as e:
         _logger.error(e)
     if payload.get("domain"):
         for _domain in payload.get("domain"):
